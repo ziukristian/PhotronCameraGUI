@@ -1,3 +1,5 @@
+import json
+import os
 import time
 import numpy as np
 from Config import CONFIG
@@ -5,6 +7,7 @@ from scipy.interpolate import CubicSpline
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 import matplotlib.patches as patches
+from datetime import datetime as dt
 
 
 def drawSquareOnPlot(event, window):
@@ -45,6 +48,14 @@ def drawSquareOnPlot(event, window):
                               linewidth=2))
     window.Initial_Canvas.draw()
 
+def drawPatch(window, x1, y1):
+    for patch in window.Initial_Axes.patches:
+        patch.remove()
+    window.Initial_Axes.add_patch(
+            patches.Rectangle((x1, y1), window.SquareSize.currentData(), window.SquareSize.currentData(), zorder=100, alpha=1, facecolor='none', edgecolor=CONFIG['SQUARE_COLOR'],
+                              linewidth=2))
+    window.Initial_Canvas.draw()
+
 # Precision delay function using time.perf_counter_ns
 def delay_ns(ns, t=time.perf_counter_ns):
     n = t()
@@ -58,10 +69,37 @@ def preciseRound(v):
     diff = v - iv
     return int(v + 1) if diff > 0.5 else iv
 
+spl_x = CubicSpline(CONFIG['WAVENUMBER_CAL'], CONFIG['X_MOTOR'])
+spl_y = CubicSpline(CONFIG['WAVENUMBER_CAL'], CONFIG['Y_MOTOR'])
 def mirror_correction(wavenumber):
-    spl_x = CubicSpline(CONFIG['WAVENUMBER_CAL'], CONFIG['X_MOTOR'])
-    spl_y = CubicSpline(CONFIG['WAVENUMBER_CAL'], CONFIG['Y_MOTOR'])
     return float(spl_x(wavenumber)), float(spl_y(wavenumber))
+
+def take_image(window, starting_wave, frames, x1, x2, y1, y2):
+    new_x, new_y = mirror_correction(starting_wave)
+
+    try:
+        window.conex1.move_absolute(new_x)
+    except:
+        print("Movement skipped for x")
+    try:
+        window.conex2.move_absolute(new_x)
+    except:
+        print("Movement skipped for y")
+
+    current_wl = round(
+        json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+    window.ff3.go_to_wavelength(starting_wave)
+
+    while abs(current_wl - starting_wave) > 1:
+        current_wl = round(
+            json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+
+    image = window.camera.returnFinalImage_Linda(frames, starting_wave, Mod=True, Flip=True, x1=x1, x2=x2,
+                                                      y1=y1, y2=y2)
+
+    return image
+
+
 
 def setup_camera(camera):
     # Set external sync mode
@@ -81,7 +119,70 @@ def getInitialImage(window):
 def getLiveImage(window):
     window.Worker_Live.start()
 
+def stopLiveImage(window):
+    """
+
+    :type window: Interface.MainWindow
+    """
+    window.StopLive = True
+
 def getHyperCube(window):
     window.Worker_Hyper.start()
 
+def stopHyperCube(window):
+    """
+
+    :type window: Interface.MainWindow
+    """
+    window.StopHyper = True
+
+def saveDataTxt(window, data, directory, filename):
+    if data is None:
+        return
+
+    result = []
+    for y in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            z = data[y, x]
+            result.append((x, y, z))
+
+    cur_time = dt.now()
+    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}/{cur_time.month}/{cur_time.day}"
+    if os.path.exists(dir_name) is False:
+        os.makedirs(dir_name, exist_ok=True)
+
+    np.savetxt(f"{dir_name}\\{filename}@{cur_time.hour:02d}-{cur_time.minute:02d}-{cur_time.second:02d}.txt", result, fmt='%s')
+
+def saveDataNpy(window, data, directory, filename):
+    if data is None:
+        return
+    cur_time = dt.now()
+    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}/{cur_time.month}/{cur_time.day}"
+    if os.path.exists(dir_name) is False:
+        os.makedirs(dir_name, exist_ok=True)
+
+    np.save(f"{dir_name}\\{filename}@{cur_time.hour:02d}-{cur_time.minute:02d}-{cur_time.second:02d}.npy", data)
+
+def saveCubeTxt(window, data, directory, filename):
+    """
+
+    :type window: Interface.MainWindow
+    """
+    wavenumber_start = int(window.WavenumberMin.value())
+    wavenumber_stop = int(window.WavenumberMax.value())
+    step = int(window.Step.currentData())
+    wavelengths = [*range(wavenumber_start, wavenumber_stop, step), wavenumber_stop]
+    result = []
+    for f in range(data.shape[0]):
+        for x in range(data.shape[1]):
+            for y in range(data.shape[2]):
+                z = data[f, x, y]
+                result.append((f, wavelengths[f], x, y, z))
+
+    cur_time = dt.now()
+    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}/{cur_time.month}/{cur_time.day}"
+    if os.path.exists(dir_name) is False:
+        os.makedirs(dir_name, exist_ok=True)
+
+    np.savetxt(f"{dir_name}\\{filename}@{cur_time.hour:02d}-{cur_time.minute:02d}-{cur_time.second:02d}.txt", result, fmt='%s')
 

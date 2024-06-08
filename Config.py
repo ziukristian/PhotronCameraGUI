@@ -19,6 +19,6 @@ CONFIG = {
     'PLOT_TITLESIZE': 10,
     'PLOT_LABELSIZE': 9,
     'PLOT_TICKERSIZE': 9,
+    'SAVING_ROOT': 'Measurements',
     'DEBUG': True,
-
 }

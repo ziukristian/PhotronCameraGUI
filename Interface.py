@@ -15,48 +15,40 @@ import Repository as REPO
 
 # Instruments
 from Instruments_Libraries.Photron import PhotronCamera  # IP address: 192.168.0.10
-import Instruments_Libraries.Firefly_LW_2024 as Firefly  # Laser IP address: 192.168.1.231; Host computer IP address: 192.168.1.187
+import \
+    Instruments_Libraries.Firefly_LW_2024 as Firefly  # Laser IP address: 192.168.1.231; Host computer IP address: 192.168.1.187
 from Instruments_Libraries.ConexCC import ConexCC
 
 
 class Worker_Initial(QThread):
     def __init__(self, window):
+        """
+
+        :type window: MainWindow
+        """
         self.window = window
         super().__init__()
+
     def run(self):
-        #if CONFIG['DEBUG']:
-            #return
-        starting_wave = self.window.Wavenumber.value()
-        frames = int(self.window.NumberOfFrames.value())
-        new_x, new_y = REPO.mirror_correction(starting_wave)
+        # if CONFIG['DEBUG']:
+        # return
+        image = REPO.take_image(self.window, self.window.Wavenumber.value(), int(self.window.NumberOfFrames.value()), 0,
+                                0, CONFIG['IMAGE_SIZE'], CONFIG['IMAGE_SIZE'])
 
-        try:
-            self.window.conex1.move_absolute(new_x)
-        except:
-            print("Movement skipped for x")
-        try:
-            self.window.conex2.move_absolute(new_x)
-        except:
-            print("Movement skipped for y")
-
-        current_wl = round(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
-        self.window.ff3.go_to_wavelength(starting_wave)
-
-        while abs(current_wl - starting_wave) > 1:
-            current_wl = round(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
-
-        image = self.window.camera.returnFinalImage_Linda(frames, starting_wave, Mod=True, Flip=True, x1=0, x2=0, y1=CONFIG['IMAGE_SIZE'], y2=CONFIG['IMAGE_SIZE'])
-
+        self.window.InitialImage = image
         self.window.Initial_Axes.imshow(image, cmap='bwr')
         self.window.Initial_Canvas.draw()
+
 
 class Worker_Live(QThread):
     def __init__(self, window):
         super().__init__()
         self.window = window
+
     def run(self):
         for i in range(5):
             time.sleep(1)
+
 
 class Worker_Hyper(QThread):
     def __init__(self, window):
@@ -66,20 +58,78 @@ class Worker_Hyper(QThread):
         """
         super().__init__()
         self.window = window
+
     def run(self):
-        self.window.HyperProgress.setValue(1)
+
+        wavenumber_start = int(self.window.WavenumberMin.value())
+        wavenumber_stop = int(self.window.WavenumberMax.value())
+        step = self.window.Step.currentData()
 
         xmin, xmax, ymin, ymax = (0, 0, 0, 0)
-        if self.window.PictureArea is None :
-            squareSize = self.window.SquareSize
+        if self.window.PictureArea is None:
+            squareSize = self.window.SquareSize.currentData()
             xmin = int((CONFIG['IMAGE_SIZE'] - squareSize) / 2)
             xmax = int((CONFIG['IMAGE_SIZE'] + squareSize) / 2)
             ymin = int((CONFIG['IMAGE_SIZE'] - squareSize) / 2)
             ymax = int((CONFIG['IMAGE_SIZE'] + squareSize) / 2)
+            REPO.drawPatch(self.window, xmin, ymin)
+        else:
+            xmin, xmax, ymin, ymax = self.window.PictureArea
 
+        if self.window.HyperCheck.isChecked():
+            self.window.HyperProgress.setMinimum(wavenumber_start)
+            self.window.HyperProgress.setMaximum(wavenumber_stop)
+            self.window.HyperProgress.setValue(wavenumber_start + 1)
 
-        array_depth = int((self.window.WavenumberMax.value() - self.window.WavenumberMin.value()) / self.window.Step.currentData())
-        array_size = xmax - xmin
+            array_depth = int((self.window.WavenumberMax.value() - self.window.WavenumberMin.value()) / step)
+            array_size = xmax - xmin
+            self.window.HyperCube = np.empty([array_depth + 1, array_size, array_size], int)
+            # [0] means tuning inactive, [1] means still tuning
+            ff3_tuning_active = bytes("[1]", 'UTF-8')
+            current_wl = round(json.loads(self.window.ff3.wavelength_status())[
+                                   'message']['parameters']['current_wavelength'][0])
+            # move Msquared laser to specified wavelength
+            self.window.ff3.go_to_wavelength(wavenumber_start)
+            # while current_wl = wavenumber_start - 1:
+            while current_wl != wavenumber_start:
+                current_wl = round(json.loads(self.window.ff3.wavelength_status())[
+                                       'message']['parameters']['current_wavelength'][0])
+            i = 0
+            for pos in range(wavenumber_start, wavenumber_stop, step):
+                if self.window.StopHyper:
+                    break
+                current_wl = round(json.loads(self.window.ff3.wavelength_status())[
+                                       'message']['parameters']['current_wavelength'][0])
+                # move Msquared laser to specified wavelength
+                self.window.ff3.go_to_wavelength(pos)
+                while abs(current_wl - wavenumber_start) > 1:
+                    current_wl = round(json.loads(self.window.ff3.wavelength_status())[
+                                           'message']['parameters']['current_wavelength'][0])
+
+                # MIRROR CORRECTION
+                new_x, new_y = REPO.mirror_correction(pos)
+                try:
+                    self.window.conex1.move_absolute(new_x)
+                except:
+                    print("Movement skipped for x")
+                try:
+                    self.window.conex2.move_absolute(new_y)
+                except:
+                    print("Movement skipped for y")
+
+                image = self.window.camera.returnFinalImage_Linda(
+                    int(self.window.NumberOfFrames.value()), 0, Mod=True, Flip=True, x1=xmin, x2=xmax, y1=ymin, y2=ymax)
+                # add data to hyperspectral data cube
+                self.window.HyperCube[i, :, :] = image
+
+                self.window.HyperProgress.setValue(pos)
+                i = i + 1
+            self.window.HyperProgress.reset()
+        else:
+            image = REPO.take_image(self.window, wavenumber_start,
+                                    int(self.window.NumberOfFrames.value()), xmin, xmax, ymin, ymax)
+            self.window.Hyper_Axes.imshow(image, cmap='bwr')
+            self.window.Hyper_Canvas.draw()
 
 
 class MainWindow(QMainWindow):
@@ -87,7 +137,10 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.setWindowTitle(CONFIG['WINDOW_TITLE'])
         self.StopHyper = False
+        self.StopLive = False
         self.PictureArea = None
+        self.InitialImage = None
+        self.HyperCube = None
         self.Worker_Initial = Worker_Initial(self)
         self.Worker_Live = Worker_Live(self)
         self.Worker_Hyper = Worker_Hyper(self)
@@ -120,7 +173,8 @@ class MainWindow(QMainWindow):
         self.Wavenumber.setValue(1450)
         self.Wavenumber.setDecimals(0)
         self.Wavenumber.setSingleStep(1)
-        self.Wavenumber.setStyleSheet("border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
+        self.Wavenumber.setStyleSheet(
+            "border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
 
         self.NumberOfFrames = QDoubleSpinBox()
         self.NumberOfFrames.setMinimum(1)
@@ -128,21 +182,22 @@ class MainWindow(QMainWindow):
         self.NumberOfFrames.setValue(5000)
         self.NumberOfFrames.setDecimals(0)
         self.NumberOfFrames.setSingleStep(1)
-        self.NumberOfFrames.setStyleSheet("border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
-
-        self.Btn_InitialImage = QPushButton('Acquire Initial Image')
+        self.NumberOfFrames.setStyleSheet(
+            "border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
 
         self.Shutterspeed = QComboBox()
         for speed in CONFIG['SHUTTERSPEED_OPTIONS_NS']:
             self.Shutterspeed.addItem(f"{speed} ns", speed)
         self.Shutterspeed.setCurrentIndex(1)
 
+        self.Btn_InitialImage = QPushButton('Acquire Initial Image')
+
         InitialImage_Layout.addWidget(QLabel("Wavenumber (cm-1)"), 0, 0)
         InitialImage_Layout.addWidget(self.Wavenumber, 1, 0)
         InitialImage_Layout.addWidget(QLabel("Number of frames"), 0, 1)
         InitialImage_Layout.addWidget(self.NumberOfFrames, 1, 1)
-        InitialImage_Layout.addWidget(self.Btn_InitialImage, 2, 0, 1, 2)
-        InitialImage_Layout.addWidget(self.Shutterspeed, 3, 0, 1, 2)
+        InitialImage_Layout.addWidget(self.Shutterspeed, 2, 0, 1, 2)
+        InitialImage_Layout.addWidget(self.Btn_InitialImage, 3, 0, 1, 2)
 
         InitialImage_Box.setLayout(InitialImage_Layout)
         # endregion
@@ -151,8 +206,8 @@ class MainWindow(QMainWindow):
         Live_Box = QGroupBox("Live Imaging")
         Live_Layout = QGridLayout()
 
-        self.Btn_StartLive = QPushButton("Save Cube (npy)")
-        self.Btn_StopLive = QPushButton("Save Cube (npy)")
+        self.Btn_StartLive = QPushButton("Start")
+        self.Btn_StopLive = QPushButton("Stop")
 
         Live_Layout.addWidget(self.Btn_StartLive, 0, 0)
         Live_Layout.addWidget(self.Btn_StopLive, 0, 1)
@@ -241,6 +296,7 @@ class MainWindow(QMainWindow):
         # endregion
 
         Settings_Layout.addWidget(InitialImage_Box)
+        Settings_Layout.addWidget(Live_Box)
         Settings_Layout.addWidget(RegionOfInterest_Box)
         Settings_Layout.addWidget(Hyperspectral_Box)
         Settings_Layout.addWidget(Data_Box)
@@ -293,7 +349,6 @@ class MainWindow(QMainWindow):
         Plots_Layout.addWidget(self.Live_Canvas)
         Plots_Layout.addWidget(self.Hyper_Canvas)
 
-
         Plots_Box.setLayout(Plots_Layout)
         # endregion
 
@@ -309,10 +364,13 @@ class MainWindow(QMainWindow):
         # region SIGNALS
         self.Btn_InitialImage.clicked.connect(lambda: REPO.getInitialImage(self))
         self.Btn_StartLive.clicked.connect(lambda: REPO.getLiveImage(self))
+        self.Btn_StopLive.clicked.connect(lambda: REPO.stopLiveImage(self))
         self.Btn_HyperStart.clicked.connect(lambda: REPO.getHyperCube(self))
+        self.Btn_HyperStop.clicked.connect(lambda: REPO.stopHyperCube(self))
+        self.Btn_SaveInitialTxt.clicked.connect(lambda: REPO.saveDataTxt(self, self.InitialImage, 'InitialImages', self.SaveInitialTxt_Name.text()))
+        self.Btn_SaveCubeNpy.clicked.connect(lambda: REPO.saveDataNpy(self, self.HyperCube, 'wIR-PHI_spectra', self.SaveCubeTxt_Name.text()))
+        self.Btn_SaveCubeTxt.clicked.connect(lambda: REPO.saveCubeTxt(self, self.HyperCube, 'wIR-PHI_spectra', self.SaveCubeNpy_Name.text()))
         # endregion
-
-
 
 
 app = QApplication(sys.argv)
