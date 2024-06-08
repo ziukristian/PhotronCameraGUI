@@ -182,6 +182,7 @@ def getHyperCube(window):
     Starts HyperWorker
     :type window: Interface.MainWindow
     """
+    window.StopHyper = False
     window.Worker_Hyper.start()
 def stopHyperCube(window):
     """
