@@ -1,7 +1,8 @@
 import numpy as np
 
 CONFIG = {
-    'WINDOW_TITLE': 'Camera View',
+    'WINDOW_TITLE': 'Photron Camera Toolbox',
+    'ICON_PATH': 'Misc/logo.svg',
     'INTERFACE_WIDTH': 1600,
     'INTERFACE_HEIGHT': 600,
     'IMAGE_SIZE': 512,
@@ -20,5 +21,6 @@ CONFIG = {
     'PLOT_LABELSIZE': 9,
     'PLOT_TICKERSIZE': 9,
     'SAVING_ROOT': 'Measurements',
-    'DEBUG': True,
+    'DEBUG': True,  # Set to true if you want console logs
+    'INSTRUMENTS_MISSING': True,  # Set to true if you're not in the lab
 }
