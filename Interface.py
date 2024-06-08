@@ -104,7 +104,7 @@ class Worker_Hyper(QThread):
             log('Hyperspectral is checked')
             self.window.HyperProgress.setMinimum(wavenumber_start)
             self.window.HyperProgress.setMaximum(wavenumber_stop)
-            self.window.HyperProgress.setValue(wavenumber_start + 1)
+            self.window.HyperProgress.setValue(wavenumber_start + step)
 
             array_depth = int((self.window.WavenumberMax.value() - self.window.WavenumberMin.value()) / step)
             array_size = xmax - xmin
@@ -150,7 +150,7 @@ class Worker_Hyper(QThread):
                 # add data to hyperspectral data cube
                 self.window.HyperCube[i, :, :] = image
 
-                self.window.HyperProgress.setValue(pos)
+                self.window.HyperProgress.setValue(pos + step)
                 i = i + 1
             self.window.HyperProgress.reset()
         else:
