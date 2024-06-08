@@ -37,7 +37,7 @@ class Worker_Initial(QThread):
 
         self.window.Btn_InitialImage.setEnabled(False)
         image = REPO.take_image(self.window, self.window.Wavenumber.value(), int(self.window.NumberOfFrames.value()), 0,
-                                0, CONFIG['IMAGE_SIZE'], CONFIG['IMAGE_SIZE'])
+                                CONFIG['IMAGE_SIZE'], 0, CONFIG['IMAGE_SIZE'])
 
         self.window.InitialImage = image
         self.window.Initial_Axes.imshow(image, cmap='bwr')
@@ -56,12 +56,15 @@ class Worker_Live(QThread):
         self.window = window
 
     def run(self):
+        log('LIVE IMAGING STARTED...')
         if CONFIG['INSTRUMENTS_MISSING']:
             return
         self.window.Btn_StartLive.setEnabled(False)
 
-        for i in range(5):
-            time.sleep(1)
+        while self.window.StopLive is False:
+            image = self.window.camera.getLiveImage_Mod(bufferSize=(512, 512), Flip=True, x1=0, x2=CONFIG['IMAGE_SIZE'], y1=0, y2=CONFIG['IMAGE_SIZE'])
+            self.window.Live_Axes.imshow(image, cmap='bwr')
+            self.window.Live_Canvas.draw()
 
         self.window.Btn_StartLive.setEnabled(True)
         self.window.Btn_StopLive.setEnabled(False)
@@ -104,7 +107,7 @@ class Worker_Hyper(QThread):
             log('Hyperspectral is checked')
             self.window.HyperProgress.setMinimum(wavenumber_start)
             self.window.HyperProgress.setMaximum(wavenumber_stop)
-            self.window.HyperProgress.setValue(wavenumber_start + 1)
+            self.window.HyperProgress.setValue(wavenumber_start + step)
 
             array_depth = int((self.window.WavenumberMax.value() - self.window.WavenumberMin.value()) / step)
             array_size = xmax - xmin
@@ -150,7 +153,7 @@ class Worker_Hyper(QThread):
                 # add data to hyperspectral data cube
                 self.window.HyperCube[i, :, :] = image
 
-                self.window.HyperProgress.setValue(pos)
+                self.window.HyperProgress.setValue(pos + step)
                 i = i + 1
             self.window.HyperProgress.reset()
         else:
