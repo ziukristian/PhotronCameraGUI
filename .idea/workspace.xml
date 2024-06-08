@@ -4,82 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="be90b765-712e-42e3-bb5d-85b09acc15c4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/CameraView.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DAX.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DAX100.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DAX50.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DCX.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DHUB.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DMC1.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DMH4.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA2.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA3.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA4.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA5.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA6.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA7.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA8.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSAX_B.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSAZ.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DSA_1.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DTX.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DUX.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DUX50.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DWX.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/DWX50.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/FCFCTRL.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/FHSDLCTRL.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/FSDCTRL.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/GIGEV.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/IGETHER.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/IGIGEV.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/IUSB.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/LPDCLIB.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/PDCLIB.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/PDCLIB.lib" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/PICCLIB.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/PIULIB.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/SDKLight.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images.exp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images.lib" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_high_speed.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_no_processing.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_parallel.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_parallel.exp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_parallel.lib" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_parallel.obj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_parallel_dynamic.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_parallel_high_speed.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/get_images_parallel_high_speed_dynamic.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/include/PDCDEV.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/include/PDCERROR.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/include/PDCFUNC.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/include/PDCLIB.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/include/PDCSTR.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/include/PDCVALUE.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/include/PICCLIB.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/test_array.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/test_array.so" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/test_parallel.c" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/C_Libraries/using_c.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Instruments_Libraries/ConexCC.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Instruments_Libraries/Firefly_LW_2024.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Instruments_Libraries/Photron.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Instruments_Libraries/pdclib_dll.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Interface.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Newport.CONEXCC.CommandInterface.dll" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Repository.py" afterDir="false" />
+    <list default="true" id="be90b765-712e-42e3-bb5d-85b09acc15c4" name="Changes" comment="Init">
+      <change afterPath="$PROJECT_DIR$/t.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config.py" beforeDir="false" afterPath="$PROJECT_DIR$/Config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/Interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/Repository.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,9 +26,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="2hZ57ZWr1l4f33IMkCdqcRUQd2s" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -110,13 +40,17 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Python.ConexCC.executor": "Run",
-    "Python.Interface.executor": "Run",
+    "Python.Config.executor": "Run",
+    "Python.Interface.executor": "Debug",
     "Python.Photron.executor": "Run",
+    "Python.Repository.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.t.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/ziukr/Desktop/CameraViewV3/CameraView/Instruments_Libraries",
+    "last_opened_file_path": "C:/Users/ziukr/Desktop/CameraViewV3/CameraView/Interface.py",
     "settings.editor.selected.configurable": "editor.preferences.folding"
   }
 }]]></component>
@@ -131,7 +65,7 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="Interface" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="CameraView" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -144,7 +78,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Interface.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -170,6 +104,19 @@
       <option name="presentableId" value="Default" />
       <updated>1717788593181</updated>
     </task>
+    <task id="LOCAL-00001" summary="Init">
+      <option name="closed" value="true" />
+      <created>1717796797384</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1717796797384</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Init" />
+    <option name="LAST_COMMIT_MESSAGE" value="Init" />
   </component>
 </project>

@@ -2,8 +2,9 @@ import numpy as np
 
 CONFIG = {
     'WINDOW_TITLE': 'Camera View',
-    'INTERFACE_WIDTH': 1400,
-    'INTERFACE_HEIGHT': 500,
+    'INTERFACE_WIDTH': 1600,
+    'INTERFACE_HEIGHT': 600,
+    'IMAGE_SIZE': 512,
     'SQUARE_COLOR': 'black',
     'SQUARE_SIZES': [512, 256, 128, 62],
     'HYPER_STEPS': [2, 4, 5, 10],
@@ -15,6 +16,9 @@ CONFIG = {
     'CAMERA_Speed_fps': 500000,
     'CAMERA_Resolution_pixel': (512, 512),
     'CMAPS': ['bwr'],
+    'PLOT_TITLESIZE': 10,
+    'PLOT_LABELSIZE': 9,
+    'PLOT_TICKERSIZE': 9,
     'DEBUG': True,
 
 }
