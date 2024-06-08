@@ -1,7 +1,7 @@
 import numpy as np
 
 CONFIG = {
-    'WINDOW_TITLE': 'Photron Camera Toolbox',
+    'WINDOW_TITLE': 'IR-PHI ToolBox',
     'ICON_PATH': 'Misc/logo.svg',
     'INTERFACE_WIDTH': 1600,
     'INTERFACE_HEIGHT': 600,

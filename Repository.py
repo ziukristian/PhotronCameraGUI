@@ -261,7 +261,6 @@ def hyperCheckChanged(window):
     else:
         window.WavenumberMax.setEnabled(False)
         window.Step.setEnabled(False)
-    
 def log(message):
     """
     Centralised message logging
