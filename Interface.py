@@ -56,7 +56,7 @@ class Worker_Live(QThread):
         self.window = window
 
     def run(self):
-        log('LIVE IMAGING STARTED ...')
+        log('LIVE IMAGING STARTED...')
         if CONFIG['INSTRUMENTS_MISSING']:
             return
         self.window.Btn_StartLive.setEnabled(False)
