@@ -4,11 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="be90b765-712e-42e3-bb5d-85b09acc15c4" name="Changes" comment="Deleted Test File">
-      <change afterPath="$PROJECT_DIR$/Misc/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Misc/logo.svg" afterDir="false" />
+    <list default="true" id="be90b765-712e-42e3-bb5d-85b09acc15c4" name="Changes" comment="Added logo and more">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config.py" beforeDir="false" afterPath="$PROJECT_DIR$/Config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/Interface.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/Repository.py" afterDir="false" />
     </list>
@@ -138,7 +135,15 @@
       <option name="project" value="LOCAL" />
       <updated>1717847353462</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Added logo and more">
+      <option name="closed" value="true" />
+      <created>1717853367781</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1717853367781</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -146,6 +151,7 @@
     <MESSAGE value="Added threads" />
     <MESSAGE value="First version" />
     <MESSAGE value="Deleted Test File" />
-    <option name="LAST_COMMIT_MESSAGE" value="Deleted Test File" />
+    <MESSAGE value="Added logo and more" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added logo and more" />
   </component>
 </project>

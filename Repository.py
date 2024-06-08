@@ -250,6 +250,18 @@ def saveCubeTxt(window, data, directory, filename):
 
     np.savetxt(f"{dir_name}\\{filename}@{cur_time.hour:02d}-{cur_time.minute:02d}-{cur_time.second:02d}.txt", result, fmt='%s')
     log('HyperCube saved as txt file')
+def hyperCheckChanged(window):
+    """
+    Disbales and enables buttons on HyperCheck change
+    :type window: Interface.MainWindow
+    """
+    if window.HyperCheck.isChecked():
+        window.WavenumberMax.setEnabled(True)
+        window.Step.setEnabled(True)
+    else:
+        window.WavenumberMax.setEnabled(False)
+        window.Step.setEnabled(False)
+    
 def log(message):
     """
     Centralised message logging

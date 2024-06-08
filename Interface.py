@@ -35,6 +35,7 @@ class Worker_Initial(QThread):
         if CONFIG['INSTRUMENTS_MISSING']:
             return
 
+        self.window.Btn_InitialImage.setEnabled(False)
         image = REPO.take_image(self.window, self.window.Wavenumber.value(), int(self.window.NumberOfFrames.value()), 0,
                                 0, CONFIG['IMAGE_SIZE'], CONFIG['IMAGE_SIZE'])
 
@@ -42,19 +43,28 @@ class Worker_Initial(QThread):
         self.window.Initial_Axes.imshow(image, cmap='bwr')
         self.window.Initial_Canvas.draw()
         log('Initial image taken')
+        self.window.Btn_InitialImage.setEnabled(True)
 
 
 class Worker_Live(QThread):
     def __init__(self, window):
+        """
+
+        :type window: MainWindow
+        """
         super().__init__()
         self.window = window
 
     def run(self):
         if CONFIG['INSTRUMENTS_MISSING']:
             return
+        self.window.Btn_StartLive.setEnabled(False)
 
         for i in range(5):
             time.sleep(1)
+
+        self.window.Btn_StartLive.setEnabled(True)
+        self.window.Btn_StopLive.setEnabled(False)
 
 
 class Worker_Hyper(QThread):
@@ -75,6 +85,8 @@ class Worker_Hyper(QThread):
         if CONFIG['INSTRUMENTS_MISSING']:
             return
 
+        self.window.Btn_HyperStop.setEnabled(True)
+        self.window.Btn_HyperStart.setEnabled(False)
         xmin, xmax, ymin, ymax = (0, 0, 0, 0)
         if self.window.PictureArea is None:
             log('Area not selected, setting it to center of image')
@@ -149,6 +161,8 @@ class Worker_Hyper(QThread):
             self.window.Hyper_Canvas.draw()
 
         log('Hyperspectral imaging finished')
+        self.window.Btn_HyperStop.setEnabled(False)
+        self.window.Btn_HyperStart.setEnabled(True)
 
 
 class MainWindow(QMainWindow):
@@ -227,7 +241,9 @@ class MainWindow(QMainWindow):
         Live_Layout = QGridLayout()
 
         self.Btn_StartLive = QPushButton("Start")
+
         self.Btn_StopLive = QPushButton("Stop")
+        self.Btn_StopLive.setEnabled(False)
 
         Live_Layout.addWidget(self.Btn_StartLive, 0, 0)
         Live_Layout.addWidget(self.Btn_StopLive, 0, 1)
@@ -259,6 +275,7 @@ class MainWindow(QMainWindow):
         for step in CONFIG['HYPER_STEPS']:
             self.Step.addItem(f"{step}", step)
         self.Step.setCurrentIndex(1)
+        self.Step.setEnabled(False)
 
         self.WavenumberMin = QDoubleSpinBox()
         self.WavenumberMin.setMinimum(1042)  # do not go below 1041 for firefly LW laser
@@ -273,12 +290,14 @@ class MainWindow(QMainWindow):
         self.WavenumberMax.setValue(1840)
         self.WavenumberMax.setDecimals(0)
         self.WavenumberMax.setSingleStep(1)
+        self.WavenumberMax.setEnabled(False)
 
         self.HyperProgress = QProgressBar(self)
         self.HyperProgress.setValue(0)
 
         self.Btn_HyperStart = QPushButton("Start")
         self.Btn_HyperStop = QPushButton("Stop")
+        self.Btn_HyperStop.setEnabled(False)
 
         Hyperspectral_Layout.addWidget(QLabel("Step (cm-1)"), 0, 1)
         Hyperspectral_Layout.addWidget(self.HyperCheck, 1, 0)
@@ -393,6 +412,7 @@ class MainWindow(QMainWindow):
 
         self.SquareSize.currentIndexChanged.connect(lambda: REPO.resetSquareOnPlot(self))
         self.Shutterspeed.currentIndexChanged.connect(lambda: REPO.updateShutterspeed(self))
+        self.HyperCheck.stateChanged.connect(lambda: REPO.hyperCheckChanged(self))
         # endregion
 
     def closeEvent(self, event):
