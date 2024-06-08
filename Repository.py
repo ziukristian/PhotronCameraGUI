@@ -239,6 +239,7 @@ def saveCubeTxt(window, data, directory, filename):
     wavelengths = [*range(wavenumber_start, wavenumber_stop, step), wavenumber_stop]
     result = []
     for f in range(data.shape[0]):
+        log(f"Writing Wave {wavelengths[f]} data")
         for x in range(data.shape[1]):
             for y in range(data.shape[2]):
                 z = data[f, x, y]
