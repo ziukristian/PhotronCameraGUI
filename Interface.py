@@ -18,6 +18,7 @@ import \
 from Instruments_Libraries.ConexCC import ConexCC
 
 log = REPO.log
+PHOTRONCAMERA = PhotronCamera()
 
 
 class Worker_Initial(QThread):
@@ -192,7 +193,7 @@ class MainWindow(QMainWindow):
 
         if CONFIG['INSTRUMENTS_MISSING'] is False:
             # PHOTRON CAMERA
-            self.camera = PhotronCamera()
+            self.camera = PHOTRONCAMERA
             self.camera.getCurrentRecordSpeed()
             REPO.setup_camera(self.camera)
             # FIREFLY
@@ -451,8 +452,7 @@ try:
     sys.exit(app.exec())
 except:
     print('ERROR, CLOSING APPLICATION...')
-    camera = PhotronCamera()
-    camera.closeCamera()  # Disconnect Photron camera
+    PHOTRONCAMERA.closeCamera()  # Disconnect Photron camera
     conex1 = ConexCC(com_port='COM3', velocity=0.5)  # Link to Newport motor 1
     conex2 = ConexCC(com_port='COM7', velocity=0.5)  # Link to Newport motor 2
     conex1.close()  # Disconnect Newport mirror1
