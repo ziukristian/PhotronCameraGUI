@@ -60,12 +60,15 @@ class Worker_Live(QThread):
         if CONFIG['INSTRUMENTS_MISSING']:
             return
         self.window.Btn_StartLive.setEnabled(False)
+        self.window.Btn_StopLive.setEnabled(True)
 
         while self.window.StopLive is False:
             image = self.window.camera.getLiveImage_Mod(bufferSize=(512, 512), Flip=True, x1=0, x2=CONFIG['IMAGE_SIZE'], y1=0, y2=CONFIG['IMAGE_SIZE'])
+            self.window.LiveImage = image
             self.window.Live_Axes.imshow(image, cmap='bwr')
             self.window.Live_Canvas.draw()
 
+        self.window.StopLive = False
         self.window.Btn_StartLive.setEnabled(True)
         self.window.Btn_StopLive.setEnabled(False)
 
@@ -107,7 +110,7 @@ class Worker_Hyper(QThread):
             log('Hyperspectral is checked')
             self.window.HyperProgress.setMinimum(wavenumber_start)
             self.window.HyperProgress.setMaximum(wavenumber_stop)
-            self.window.HyperProgress.setValue(wavenumber_start + step)
+            self.window.HyperProgress.setValue(wavenumber_start + 1)
 
             array_depth = int((self.window.WavenumberMax.value() - self.window.WavenumberMin.value()) / step)
             array_size = xmax - xmin
@@ -122,7 +125,7 @@ class Worker_Hyper(QThread):
             while current_wl != wavenumber_start:
                 current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())[
                                        'message']['parameters']['current_wavelength'][0])
-            log(f'Wavelength {wavenumber_start} reached')
+            log(f'Wavelength {wavenumber_start}f reached')
             i = 0
             for pos in range(wavenumber_start, wavenumber_stop, step):
                 log(f'Getting image for wavelength {pos}')
@@ -155,6 +158,8 @@ class Worker_Hyper(QThread):
 
                 self.window.HyperProgress.setValue(pos + step)
                 i = i + 1
+            self.window.Hyper_Axes.imshow(self.window.HyperCube[0, :, :], cmap='bwr')
+            self.window.Hyper_Canvas.draw()
             self.window.HyperProgress.reset()
         else:
             log('Hyperspectral is not checked, requesting single image')
@@ -163,9 +168,11 @@ class Worker_Hyper(QThread):
             self.window.Hyper_Axes.imshow(image, cmap='bwr')
             self.window.Hyper_Canvas.draw()
 
-        log('Hyperspectral imaging finished')
+        self.window.StopHyper = False
         self.window.Btn_HyperStop.setEnabled(False)
         self.window.Btn_HyperStart.setEnabled(True)
+        log('Hyperspectral imaging finished')
+
 
 
 class MainWindow(QMainWindow):
@@ -177,6 +184,7 @@ class MainWindow(QMainWindow):
         self.StopLive = False
         self.PictureArea = None
         self.InitialImage = None
+        self.LiveImage = None
         self.HyperCube = None
         self.Worker_Initial = Worker_Initial(self)
         self.Worker_Live = Worker_Live(self)
@@ -185,6 +193,7 @@ class MainWindow(QMainWindow):
         if CONFIG['INSTRUMENTS_MISSING'] is False:
             # PHOTRON CAMERA
             self.camera = PhotronCamera()
+            self.camera.getCurrentRecordSpeed()
             REPO.setup_camera(self.camera)
             # FIREFLY
             self.ff3 = Firefly.Firefly_LW_2024(sock=None)
@@ -326,13 +335,18 @@ class MainWindow(QMainWindow):
         self.Btn_SaveCubeNpy = QPushButton("Save Cube (npy)")
         self.SaveCubeTxt_Name = QLineEdit('FileName')
         self.Btn_SaveCubeTxt = QPushButton("Save Cube (txt)")
+        self.SaveLiveImageTxt_Name = QLineEdit('FileName')
+        self.Btn_SaveLiveImageTxt = QPushButton("Save Live Image (txt)")
 
         Data_Layout.addWidget(self.SaveInitialTxt_Name, 0, 0)
-        Data_Layout.addWidget(self.SaveCubeNpy_Name, 0, 1)
-        Data_Layout.addWidget(self.SaveCubeTxt_Name, 0, 2)
+        Data_Layout.addWidget(self.SaveLiveImageTxt_Name, 0, 1)
+        Data_Layout.addWidget(self.SaveCubeNpy_Name, 0, 2)
+        Data_Layout.addWidget(self.SaveCubeTxt_Name, 0, 3)
         Data_Layout.addWidget(self.Btn_SaveInitialTxt, 1, 0)
-        Data_Layout.addWidget(self.Btn_SaveCubeNpy, 1, 1)
-        Data_Layout.addWidget(self.Btn_SaveCubeTxt, 1, 2)
+        Data_Layout.addWidget(self.Btn_SaveLiveImageTxt, 1, 1)
+        Data_Layout.addWidget(self.Btn_SaveCubeNpy, 1, 2)
+        Data_Layout.addWidget(self.Btn_SaveCubeTxt, 1, 3)
+
 
         Data_Box.setLayout(Data_Layout)
         # endregion
@@ -410,8 +424,11 @@ class MainWindow(QMainWindow):
         self.Btn_HyperStart.clicked.connect(lambda: REPO.getHyperCube(self))
         self.Btn_HyperStop.clicked.connect(lambda: REPO.stopHyperCube(self))
         self.Btn_SaveInitialTxt.clicked.connect(lambda: REPO.saveDataTxt(self, self.InitialImage, 'InitialImages', self.SaveInitialTxt_Name.text()))
+        self.Btn_SaveLiveImageTxt.clicked.connect(lambda: REPO.saveDataTxt(self, self.LiveImage, 'LiveImages', self.SaveLiveImageTxt_Name.text()))
         self.Btn_SaveCubeNpy.clicked.connect(lambda: REPO.saveDataNpy(self, self.HyperCube, 'wIR-PHI_spectra', self.SaveCubeTxt_Name.text()))
         self.Btn_SaveCubeTxt.clicked.connect(lambda: REPO.saveCubeTxt(self, self.HyperCube, 'wIR-PHI_spectra', self.SaveCubeNpy_Name.text()))
+
+
 
         self.SquareSize.currentIndexChanged.connect(lambda: REPO.resetSquareOnPlot(self))
         self.Shutterspeed.currentIndexChanged.connect(lambda: REPO.updateShutterspeed(self))
@@ -421,12 +438,22 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if CONFIG['INSTRUMENTS_MISSING']:
             return event.accept()
+        print('CLOSE')
         self.camera.closeCamera()  # Disconnect Photron camera
         self.conex1.close()  # Disconnect Newport mirror1
         self.conex2.close()  # Disconnect Newport mirror2
         event.accept() # Close window
 
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-sys.exit(app.exec())
+try:
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
+except:
+    print('ERROR, CLOSING APPLICATION...')
+    camera = PhotronCamera()
+    camera.closeCamera()  # Disconnect Photron camera
+    conex1 = ConexCC(com_port='COM3', velocity=0.5)  # Link to Newport motor 1
+    conex2 = ConexCC(com_port='COM7', velocity=0.5)  # Link to Newport motor 2
+    conex1.close()  # Disconnect Newport mirror1
+    conex2.close()

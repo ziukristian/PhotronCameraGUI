@@ -438,6 +438,8 @@ class PhotronCamera():
         return image
 
     def returnFinalImage_Linda(self, num_of_images,start_image, Mod = False, Flip=False, x1=0, x2=256, y1=0, y2=256):
+        if num_of_images%2 != 0:
+            num_of_images = num_of_images+1
         timer_start = time.perf_counter()
         """
         Retrives images from single experiment, subtracts odd images from even

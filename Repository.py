@@ -137,7 +137,7 @@ def take_image(window, starting_wave, frames, x1, x2, y1, y2):
         current_wl = preciseRound(
             json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
 
-    image = window.camera.returnFinalImage_Linda(frames, starting_wave, Mod=True, Flip=True, x1=x1, x2=x2,
+    image = window.camera.returnFinalImage_Linda(frames, int(starting_wave), Mod=True, Flip=True, x1=x1, x2=x2,
                                                       y1=y1, y2=y2)
 
     return image
@@ -182,7 +182,6 @@ def getHyperCube(window):
     Starts HyperWorker
     :type window: Interface.MainWindow
     """
-    window.StopHyper = False
     window.Worker_Hyper.start()
 def stopHyperCube(window):
     """
@@ -206,7 +205,7 @@ def saveDataTxt(window, data, directory, filename):
             result.append((x, y, z))
 
     cur_time = dt.now()
-    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}/{cur_time.month}/{cur_time.day}"
+    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}-{cur_time.month}-{cur_time.day}"
     if os.path.exists(dir_name) is False:
         os.makedirs(dir_name, exist_ok=True)
 
@@ -220,7 +219,7 @@ def saveDataNpy(window, data, directory, filename):
     if data is None:
         return log('No data found to export')
     cur_time = dt.now()
-    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}/{cur_time.month}/{cur_time.day}"
+    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}-{cur_time.month}-{cur_time.day}"
     if os.path.exists(dir_name) is False:
         os.makedirs(dir_name, exist_ok=True)
 
@@ -246,7 +245,7 @@ def saveCubeTxt(window, data, directory, filename):
                 result.append((f, wavelengths[f], x, y, z))
 
     cur_time = dt.now()
-    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}/{cur_time.month}/{cur_time.day}"
+    dir_name = f"{CONFIG['SAVING_ROOT']}\\{directory}\\{cur_time.year}-{cur_time.month}-{cur_time.day}"
     if os.path.exists(dir_name) is False:
         os.makedirs(dir_name, exist_ok=True)
 
