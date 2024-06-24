@@ -22,6 +22,7 @@ PHOTRONCAMERA = PhotronCamera()
 
 
 class Worker_Initial(QThread):
+    signalWorkerInitialEnded = pyqtSignal()
     def __init__(self, window):
         """
 
@@ -31,23 +32,23 @@ class Worker_Initial(QThread):
         super().__init__()
 
     def run(self):
-        log(f'Taking initial image ON {self.window.Wavenumber.value()} ({int(self.window.NumberOfFrames.value())} FRAMES) ({CONFIG['IMAGE_SIZE']}x{CONFIG['IMAGE_SIZE']} SIZE)...')
-
         if CONFIG['INSTRUMENTS_MISSING']:
+            self.signalWorkerInitialEnded.emit()
             return
 
-        self.window.Btn_InitialImage.setEnabled(False)
-        image = REPO.take_image(self.window, self.window.Wavenumber.value(), int(self.window.NumberOfFrames.value()), 0,
-                                CONFIG['IMAGE_SIZE'], 0, CONFIG['IMAGE_SIZE'])
+        image = REPO.getPhotronImage(self.window, self.window.Wavenumber.value(), int(self.window.NumberOfFrames.value()), 0,
+                                     CONFIG['IMAGE_SIZE'], 0, CONFIG['IMAGE_SIZE'])
 
         self.window.InitialImage = image
         self.window.Initial_Axes.imshow(image, cmap='bwr')
         self.window.Initial_Canvas.draw()
         log('Initial image taken')
-        self.window.Btn_InitialImage.setEnabled(True)
+        self.signalWorkerInitialEnded.emit()
+
 
 
 class Worker_Live(QThread):
+    signalWorkerLiveEnded = pyqtSignal()
     def __init__(self, window):
         """
 
@@ -57,11 +58,10 @@ class Worker_Live(QThread):
         self.window = window
 
     def run(self):
-        log('LIVE IMAGING STARTED...')
+
         if CONFIG['INSTRUMENTS_MISSING']:
+            self.signalWorkerLiveEnded.emit()
             return
-        self.window.Btn_StartLive.setEnabled(False)
-        self.window.Btn_StopLive.setEnabled(True)
 
         while self.window.StopLive is False:
             image = self.window.camera.getLiveImage_Mod(bufferSize=(512, 512), Flip=True, x1=0, x2=CONFIG['IMAGE_SIZE'], y1=0, y2=CONFIG['IMAGE_SIZE'])
@@ -69,12 +69,12 @@ class Worker_Live(QThread):
             self.window.Live_Axes.imshow(image, cmap='bwr')
             self.window.Live_Canvas.draw()
 
-        self.window.StopLive = False
-        self.window.Btn_StartLive.setEnabled(True)
-        self.window.Btn_StopLive.setEnabled(False)
+        self.signalWorkerLiveEnded.emit()
+
 
 
 class Worker_Hyper(QThread):
+    signalWorkerHyperEnded = pyqtSignal()
     def __init__(self, window):
         """
 
@@ -90,10 +90,10 @@ class Worker_Hyper(QThread):
         log(f'Starting hyperspectral imaging FROM {wavenumber_start} TO {wavenumber_stop} ({step} STEP)...')
 
         if CONFIG['INSTRUMENTS_MISSING']:
+            self.signalWorkerHyperEnded.emit()
             return
 
-        self.window.Btn_HyperStop.setEnabled(True)
-        self.window.Btn_HyperStart.setEnabled(False)
+
         xmin, xmax, ymin, ymax = (0, 0, 0, 0)
         if self.window.PictureArea is None:
             log('Area not selected, setting it to center of image')
@@ -118,12 +118,12 @@ class Worker_Hyper(QThread):
             self.window.HyperCube = np.empty([array_depth + 1, array_size, array_size], int)
             # [0] means tuning inactive, [1] means still tuning
             ff3_tuning_active = bytes("[1]", 'UTF-8')
-            current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+            current_wl = REPO.customRound(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
             # move Msquared laser to specified wavelength
             self.window.ff3.go_to_wavelength(wavenumber_start)
             # while current_wl = wavenumber_start - 1:
             while current_wl != wavenumber_start:
-                current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())[
+                current_wl = REPO.customRound(json.loads(self.window.ff3.wavelength_status())[
                                        'message']['parameters']['current_wavelength'][0])
             log(f'Wavelength {wavenumber_start}f reached')
             i = 0
@@ -132,15 +132,15 @@ class Worker_Hyper(QThread):
                 if self.window.StopHyper:
                     log('Hyperspectral imaging manually stopped')
                     break
-                current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+                current_wl = REPO.customRound(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
                 # move Msquared laser to specified wavelength
                 self.window.ff3.go_to_wavelength(pos)
                 while abs(current_wl - pos) > 1:
-                    current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())[
+                    current_wl = REPO.customRound(json.loads(self.window.ff3.wavelength_status())[
                                            'message']['parameters']['current_wavelength'][0])
 
                 # MIRROR CORRECTION
-                new_x, new_y = REPO.mirror_correction(pos)
+                new_x, new_y = REPO.mirrorCorrection(pos)
                 try:
                     self.window.conex1.move_absolute(new_x)
                 except:
@@ -162,15 +162,13 @@ class Worker_Hyper(QThread):
             self.window.HyperProgress.reset()
         else:
             log('Hyperspectral is not checked, requesting single image')
-            image = REPO.take_image(self.window, wavenumber_start,
-                                    int(self.window.NumberOfFrames.value()), xmin, xmax, ymin, ymax)
+            image = REPO.getPhotronImage(self.window, wavenumber_start,
+                                         int(self.window.NumberOfFrames.value()), xmin, xmax, ymin, ymax)
             self.window.Hyper_Axes.imshow(image, cmap='bwr')
             self.window.Hyper_Canvas.draw()
 
-        self.window.StopHyper = False
-        self.window.Btn_HyperStop.setEnabled(False)
-        self.window.Btn_HyperStart.setEnabled(True)
-        log('Hyperspectral imaging finished')
+        self.signalWorkerHyperEnded.emit()
+
 
 
 
@@ -193,7 +191,7 @@ class MainWindow(QMainWindow):
             # PHOTRON CAMERA
             self.camera = PHOTRONCAMERA
             self.camera.getCurrentRecordSpeed()
-            REPO.setup_camera(self.camera)
+            REPO.photronCameraSetup(self.camera)
             # FIREFLY
             self.ff3 = Firefly.Firefly_LW_2024(sock=None)
             # CONEX
@@ -429,8 +427,14 @@ class MainWindow(QMainWindow):
 
 
         self.SquareSize.currentIndexChanged.connect(lambda: REPO.resetSquareOnPlot(self))
-        self.Shutterspeed.currentIndexChanged.connect(lambda: REPO.updateShutterspeed(self))
-        self.HyperCheck.stateChanged.connect(lambda: REPO.hyperCheckChanged(self))
+        self.Shutterspeed.currentIndexChanged.connect(lambda: REPO.updatePhotronShutterSpeed(self))
+        self.HyperCheck.stateChanged.connect(lambda: REPO.hyperCheckOnChange(self))
+        # endregion
+
+        # region THREAD SIGNALS
+        self.Worker_Initial.signalWorkerInitialEnded.connect(lambda: REPO.workerInitialEnded(self))
+        self.Worker_Live.signalWorkerInitialEnded.connect(lambda: REPO.workerLiveEnded(self))
+        self.Worker_Hyper.signalWorkerInitialEnded.connect(lambda: REPO.workerHyperEnded(self))
         # endregion
 
     def closeEvent(self, event):
@@ -440,7 +444,7 @@ class MainWindow(QMainWindow):
         self.camera.closeCamera()  # Disconnect Photron camera
         self.conex1.close()  # Disconnect Newport mirror1
         self.conex2.close()  # Disconnect Newport mirror2
-        event.accept() # Close window
+        event.accept()  # Close window
 
 try:
     app = QApplication(sys.argv)
