@@ -118,8 +118,7 @@ class Worker_Hyper(QThread):
             self.window.HyperCube = np.empty([array_depth + 1, array_size, array_size], int)
             # [0] means tuning inactive, [1] means still tuning
             ff3_tuning_active = bytes("[1]", 'UTF-8')
-            current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())[
-                                   'message']['parameters']['current_wavelength'][0])
+            current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
             # move Msquared laser to specified wavelength
             self.window.ff3.go_to_wavelength(wavenumber_start)
             # while current_wl = wavenumber_start - 1:
@@ -133,11 +132,10 @@ class Worker_Hyper(QThread):
                 if self.window.StopHyper:
                     log('Hyperspectral imaging manually stopped')
                     break
-                current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())[
-                                       'message']['parameters']['current_wavelength'][0])
+                current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
                 # move Msquared laser to specified wavelength
                 self.window.ff3.go_to_wavelength(pos)
-                while abs(current_wl - wavenumber_start) > 1:
+                while abs(current_wl - pos) > 1:
                     current_wl = REPO.preciseRound(json.loads(self.window.ff3.wavelength_status())[
                                            'message']['parameters']['current_wavelength'][0])
 
@@ -220,8 +218,7 @@ class MainWindow(QMainWindow):
         self.Wavenumber.setValue(1450)
         self.Wavenumber.setDecimals(0)
         self.Wavenumber.setSingleStep(1)
-        self.Wavenumber.setStyleSheet(
-            "border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
+        self.Wavenumber.setStyleSheet("border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
 
         self.NumberOfFrames = QDoubleSpinBox()
         self.NumberOfFrames.setMinimum(1)
@@ -229,8 +226,7 @@ class MainWindow(QMainWindow):
         self.NumberOfFrames.setValue(5000)
         self.NumberOfFrames.setDecimals(0)
         self.NumberOfFrames.setSingleStep(1)
-        self.NumberOfFrames.setStyleSheet(
-            "border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
+        self.NumberOfFrames.setStyleSheet("border-radius : 15; border : 1px solid white; background-color : #F2DB74;color:black")
 
         self.Shutterspeed = QComboBox()
         for speed in CONFIG['SHUTTERSPEED_OPTIONS_NS']:
@@ -296,6 +292,7 @@ class MainWindow(QMainWindow):
         self.WavenumberMin.setValue(1042)
         self.WavenumberMin.setDecimals(0)
         self.WavenumberMin.setSingleStep(1)
+        #self.WavenumberMin.setEnabled(False)
 
         self.WavenumberMax = QDoubleSpinBox()
         self.WavenumberMax.setMinimum(1042)  # do not go below 1041 for firefly LW laser
@@ -366,7 +363,7 @@ class MainWindow(QMainWindow):
         Plots_Layout = QHBoxLayout()
 
         # region INITIAL IMAGE
-        fig = Figure(figsize=(5, 4), dpi=100)
+        fig = Figure(figsize=(6, 5), dpi=100)
         fig.canvas.mpl_connect('button_press_event', lambda event: REPO.drawSquareOnPlot(event, self))
         self.Initial_Canvas = FigureCanvasQTAgg(fig)
         self.Initial_Axes = fig.add_subplot(111)
@@ -391,7 +388,7 @@ class MainWindow(QMainWindow):
         # endregion
 
         # region HYPER IMAGE
-        fig = Figure(figsize=(5, 4), dpi=100)
+        fig = Figure(figsize=(6, 5), dpi=100)
         self.Hyper_Canvas = FigureCanvasQTAgg(fig)
         self.Hyper_Axes = fig.add_subplot(111)
         self.Hyper_Axes.imshow(np.random.random((512, 512)), cmap='bwr')

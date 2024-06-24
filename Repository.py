@@ -54,6 +54,12 @@ def drawSquareOnPlot(event, window):
             patches.Rectangle((x1, y1), square_size, square_size, zorder=100, alpha=1, facecolor='none', edgecolor=CONFIG['SQUARE_COLOR'],
                               linewidth=2))
     window.Initial_Canvas.draw()
+
+    if window.InitialImage is not None:
+        submatrix = window.InitialImage[x1:x2, y1:y2]
+        submatrix_mean = submatrix.mean()
+        print(f"SUBMATRIX MEAN: {submatrix_mean}")
+
 def drawPatch(window, x1, y1):
     """
     Draws a square on InitialImage
@@ -125,17 +131,15 @@ def take_image(window, starting_wave, frames, x1, x2, y1, y2):
     except:
         print("Movement skipped for x")
     try:
-        window.conex2.move_absolute(new_x)
+        window.conex2.move_absolute(new_y)
     except:
         print("Movement skipped for y")
 
-    current_wl = preciseRound(
-        json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+    current_wl = preciseRound(json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
     window.ff3.go_to_wavelength(starting_wave)
 
     while abs(current_wl - starting_wave) > 1:
-        current_wl = preciseRound(
-            json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+        current_wl = preciseRound(json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
 
     image = window.camera.returnFinalImage_Linda(frames, int(starting_wave), Mod=True, Flip=True, x1=x1, x2=x2,
                                                       y1=y1, y2=y2)
@@ -258,9 +262,11 @@ def hyperCheckChanged(window):
     """
     if window.HyperCheck.isChecked():
         window.WavenumberMax.setEnabled(True)
+        #window.WavenumberMin.setEnabled(True)
         window.Step.setEnabled(True)
     else:
         window.WavenumberMax.setEnabled(False)
+        #window.WavenumberMin.setEnabled(False)
         window.Step.setEnabled(False)
 def log(message):
     """
