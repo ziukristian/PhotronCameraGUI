@@ -13,6 +13,81 @@ from datetime import datetime as dt
 spl_x = CubicSpline(CONFIG['WAVENUMBER_CAL'], CONFIG['X_MOTOR'])
 spl_y = CubicSpline(CONFIG['WAVENUMBER_CAL'], CONFIG['Y_MOTOR'])
 
+# region INITIAL IMAGING
+def getInitialImage(window):
+    """
+    Starts WorkerInitial
+    :type window: Interface.MainWindow
+    """
+    window.Btn_InitialImage.setEnabled(False)
+    log(f'Taking initial image ON {window.Wavenumber.value()} ({int(window.NumberOfFrames.value())} FRAMES) ({CONFIG['IMAGE_SIZE']}x{CONFIG['IMAGE_SIZE']} SIZE)...')
+    window.Worker_Initial.start()
+def workerInitialEnded(window):
+    """
+        Called when WorkerInitial ends
+        :type window: Interface.MainWindow
+    """
+    window.Btn_InitialImage.setEnabled(True)
+    return
+# endregion
+
+# region LIVE IMAGING
+def getLiveImage(window):
+    """
+    Starts WorkerLive
+    :type window: Interface.MainWindow
+    """
+    log('LIVE IMAGING STARTED...')
+    window.Btn_StartLive.setEnabled(False)
+    window.Btn_StopLive.setEnabled(True)
+    window.Worker_Live.start()
+def stopLiveImage(window):
+    """
+    Stops WorkerLive
+    :type window: Interface.MainWindow
+    """
+    window.StopLive = True
+    log('Stopping live imaging...')
+def workerLiveEnded(window):
+    """
+        Called when WorkerInitial ends
+        :type window: Interface.MainWindow
+    """
+    window.StopLive = False
+    window.Btn_StartLive.setEnabled(True)
+    window.Btn_StopLive.setEnabled(False)
+    return
+# endregion
+
+# region HYPERSPECTRAL IMAGING
+def getHyperCube(window):
+    """
+    Starts HyperWorker
+    :type window: Interface.MainWindow
+    """
+    window.Btn_HyperStop.setEnabled(True)
+    window.Btn_HyperStart.setEnabled(False)
+    window.Worker_Hyper.start()
+def stopHyperCube(window):
+    """
+    Sends a signal to the WorkerHyper to stop
+    :type window: Interface.MainWindow
+    """
+    window.StopHyper = True
+    log('Stopping hyperspectral imaging...')
+def workerHyperEnded(window):
+    """
+        Called when WorkerInitial ends
+        :type window: Interface.MainWindow
+    """
+    window.StopHyper = False
+    window.Btn_HyperStop.setEnabled(False)
+    window.Btn_HyperStart.setEnabled(True)
+    log('Hyperspectral imaging finished')
+    return
+# endregion
+
+# region PLOT FUNCTIONS
 def drawSquareOnPlot(event, window):
     """
     When InitialImage is clicked, draws a square based on event click coordinates
@@ -59,7 +134,6 @@ def drawSquareOnPlot(event, window):
         submatrix = window.InitialImage[x1:x2, y1:y2]
         submatrix_mean = submatrix.mean()
         print(f"SUBMATRIX MEAN: {submatrix_mean}")
-
 def drawPatch(window, x1, y1):
     """
     Draws a square on InitialImage
@@ -80,120 +154,9 @@ def resetSquareOnPlot(window):
         patch.remove()
     window.PictureArea = None
     window.Initial_Canvas.draw()
-def updateShutterspeed(window):
-    """
-    Updated Photron shutterspeed
-    :type window: Interface.MainWindow
-    """
+# endregion
 
-    newSpeed = 500000
-    match window.Shutterspeed.currentData():
-        case 333:
-            newSpeed = 3000000
-        case 500:
-            newSpeed = 2000000
-        case 1000:
-            newSpeed = 1000000
-        case 2000:
-            newSpeed = 500000
-    log(f'Changing shutterspeed to {newSpeed} fps...')
-
-    if CONFIG['INSTRUMENTS_MISSING']:
-        return
-
-    window.camera.setShutterSpeed(speed_in_fps=newSpeed)
-    log('Shutterspeed updated')
-# Precision delay function using time.perf_counter_ns
-def delay_ns(ns, t=time.perf_counter_ns):
-    n = t()
-    e = n + ns
-    while n < e:
-        n = t()
-# global preciseRounding function
-def preciseRound(v):
-    """
-    Custom round function
-    """
-    iv = int(v)
-    diff = v - iv
-    return int(v + 1) if diff > 0.5 else iv
-def mirror_correction(wavenumber):
-    return float(spl_x(wavenumber)), float(spl_y(wavenumber))
-def take_image(window, starting_wave, frames, x1, x2, y1, y2):
-    """
-    Returns an image taken from a Photron camera
-    :type window: Interface.MainWindow
-    """
-    new_x, new_y = mirror_correction(starting_wave)
-
-    try:
-        window.conex1.move_absolute(new_x)
-    except:
-        print("Movement skipped for x")
-    try:
-        window.conex2.move_absolute(new_y)
-    except:
-        print("Movement skipped for y")
-
-    current_wl = preciseRound(json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
-    window.ff3.go_to_wavelength(starting_wave)
-
-    while abs(current_wl - starting_wave) > 1:
-        current_wl = preciseRound(json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
-
-    image = window.camera.returnFinalImage_Linda(frames, int(starting_wave), Mod=True, Flip=True, x1=x1, x2=x2,
-                                                      y1=y1, y2=y2)
-
-    return image
-def setup_camera(camera):
-    """
-    Sets up Photron camera
-    :type camera: Interface.MainWindow.camera
-    """
-    log('Camera setup...')
-    # Set external sync mode
-    camera.setExternalInMode()
-    # Set sync delay in μsec
-    camera.setSyncInDelay(delay=CONFIG['CAMERA_SyncInDelay_μsec'])
-    # 22900 Set shutter speed in fps (333 ns integration time per frame) before was 3_000_000. If the speed is set in
-    # nanosec we should put 300ns. The minimum is 200ns.  1/fps
-    camera.setShutterSpeed(speed_in_fps=CONFIG['CAMERA_Speed_fps'])
-    # Set resolution
-    camera.setResolution(size=CONFIG['CAMERA_Resolution_pixel'])
-    camera.intShading()
-    log('Camera setup finished')
-def getInitialImage(window):
-    """
-    Starts WorkerInitial
-    :type window: Interface.MainWindow
-    """
-    window.Worker_Initial.start()
-def getLiveImage(window):
-    """
-    Starts WorkerLive
-    :type window: Interface.MainWindow
-    """
-    window.Worker_Live.start()
-def stopLiveImage(window):
-    """
-    Stops WorkerLive
-    :type window: Interface.MainWindow
-    """
-    window.StopLive = True
-    log('Stopping live imaging...')
-def getHyperCube(window):
-    """
-    Starts HyperWorker
-    :type window: Interface.MainWindow
-    """
-    window.Worker_Hyper.start()
-def stopHyperCube(window):
-    """
-    Sends a signal to the WorkerHyper to stop
-    :type window: Interface.MainWindow
-    """
-    window.StopHyper = True
-    log('Stopping hyperspectral imaging...')
+# region SAVE FUNCTIONS
 def saveDataTxt(window, data, directory, filename):
     """
     Saves data into a txt file with every value and corresponding indexes
@@ -255,7 +218,91 @@ def saveCubeTxt(window, data, directory, filename):
 
     np.savetxt(f"{dir_name}\\{filename}@{cur_time.hour:02d}-{cur_time.minute:02d}-{cur_time.second:02d}.txt", result, fmt='%s')
     log('HyperCube saved as txt file')
-def hyperCheckChanged(window):
+# endregion
+
+def updatePhotronShutterSpeed(window):
+    """
+    Updated Photron shutterspeed
+    :type window: Interface.MainWindow
+    """
+
+    newSpeed = 500000
+    match window.Shutterspeed.currentData():
+        case 333:
+            newSpeed = 3000000
+        case 500:
+            newSpeed = 2000000
+        case 1000:
+            newSpeed = 1000000
+        case 2000:
+            newSpeed = 500000
+    log(f'Changing shutterspeed to {newSpeed} fps...')
+
+    if CONFIG['INSTRUMENTS_MISSING']:
+        return
+
+    window.camera.setShutterSpeed(speed_in_fps=newSpeed)
+    log('Shutterspeed updated')
+# Precision delay function using time.perf_counter_ns
+def delay_ns(ns, t=time.perf_counter_ns):
+    n = t()
+    e = n + ns
+    while n < e:
+        n = t()
+# global preciseRounding function
+def customRound(v):
+    """
+    Custom round function
+    """
+    iv = int(v)
+    diff = v - iv
+    return int(v + 1) if diff > 0.5 else iv
+def mirrorCorrection(wavenumber):
+    return float(spl_x(wavenumber)), float(spl_y(wavenumber))
+def getPhotronImage(window, starting_wave, frames, x1, x2, y1, y2):
+    """
+    Returns an image taken from a Photron camera
+    :type window: Interface.MainWindow
+    """
+    new_x, new_y = mirrorCorrection(starting_wave)
+
+    try:
+        window.conex1.move_absolute(new_x)
+    except:
+        print("Movement skipped for x")
+    try:
+        window.conex2.move_absolute(new_y)
+    except:
+        print("Movement skipped for y")
+
+    current_wl = customRound(json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+    window.ff3.go_to_wavelength(starting_wave)
+
+    while abs(current_wl - starting_wave) > 1:
+        current_wl = customRound(json.loads(window.ff3.wavelength_status())['message']['parameters']['current_wavelength'][0])
+
+    image = window.camera.returnFinalImage_Linda(frames, int(starting_wave), Mod=True, Flip=True, x1=x1, x2=x2,
+                                                      y1=y1, y2=y2)
+
+    return image
+def photronCameraSetup(camera):
+    """
+    Sets up Photron camera
+    :type camera: Interface.MainWindow.camera
+    """
+    log('Camera setup...')
+    # Set external sync mode
+    camera.setExternalInMode()
+    # Set sync delay in μsec
+    camera.setSyncInDelay(delay=CONFIG['CAMERA_SyncInDelay_μsec'])
+    # 22900 Set shutter speed in fps (333 ns integration time per frame) before was 3_000_000. If the speed is set in
+    # nanosec we should put 300ns. The minimum is 200ns.  1/fps
+    camera.setShutterSpeed(speed_in_fps=CONFIG['CAMERA_Speed_fps'])
+    # Set resolution
+    camera.setResolution(size=CONFIG['CAMERA_Resolution_pixel'])
+    camera.intShading()
+    log('Camera setup finished')
+def hyperCheckOnChange(window):
     """
     Disbales and enables buttons on HyperCheck change
     :type window: Interface.MainWindow
@@ -268,6 +315,12 @@ def hyperCheckChanged(window):
         window.WavenumberMax.setEnabled(False)
         #window.WavenumberMin.setEnabled(False)
         window.Step.setEnabled(False)
+
+
+
+
+
+
 def log(message):
     """
     Centralised message logging
