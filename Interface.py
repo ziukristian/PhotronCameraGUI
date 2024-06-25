@@ -433,8 +433,8 @@ class MainWindow(QMainWindow):
 
         # region THREAD SIGNALS
         self.Worker_Initial.signalWorkerInitialEnded.connect(lambda: REPO.workerInitialEnded(self))
-        self.Worker_Live.signalWorkerInitialEnded.connect(lambda: REPO.workerLiveEnded(self))
-        self.Worker_Hyper.signalWorkerInitialEnded.connect(lambda: REPO.workerHyperEnded(self))
+        self.Worker_Live.signalWorkerLiveEnded.connect(lambda: REPO.workerLiveEnded(self))
+        self.Worker_Hyper.signalWorkerHyperEnded.connect(lambda: REPO.workerHyperEnded(self))
         # endregion
 
     def closeEvent(self, event):
