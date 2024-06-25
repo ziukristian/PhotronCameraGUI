@@ -12,7 +12,10 @@ class PhotronCamera():
         
         # lib for retrieving images
         #self.ret_image_dll = ct.CDLL("C:\\Users\\kuno\\OneDrive - nd.edu\\Documents\\Soft_related\\_Python Scripts\\IR-PHI (widefield) 2022\\photron_cam_Oct\\c\\get_images_parallel_high_speed_dynamic.dll")
-        self.ret_image_dll = ct.CDLL("C:\\Users\\kuno\\OneDrive - nd.edu\\Desktop\\Camera View\\c\\get_images_parallel_high_speed_dynamic.dll")
+        #self.ret_image_dll = ct.CDLL("C:\\Users\\kuno\\OneDrive - nd.edu\\Desktop\\Camera View\\c\\get_images_parallel_high_speed_dynamic.dll")
+        #self.ret_image_dll = ct.CDLL("C:\\Users\\kuno\\OneDrive - nd.edu\\Desktop\\PhotronCameraGUI\\New Code\\Photron1\\x64\\Release\\Dll1.dll")
+        self.ret_image_dll = ct.CDLL(
+            "Instruments_Libraries\\PhotronSDK.dll") # It's the new dll built on 06/25/2024
         #self.ret_image_dll = ct.CDLL("C:\\Users\\kuno\\OneDrive - nd.edu\\Desktop\\parallel.dll")
         #self.ret_image_dll = ct.CDLL("C:\\Users\\kuno\\OneDrive - nd.edu\\Desktop\\CameraView\\get_images_COMPILING.zip\\Linda\\parallel.dll")
 
